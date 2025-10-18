@@ -1,0 +1,47 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Goal {
+  id        String   @id @default(uuid())
+  title     String
+  type      GoalType
+  target    Float?
+  unit      String?
+  icon      String   @default("🎯")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  weeklyProgress WeeklyProgress[]
+
+  @@map("goals")
+}
+
+model WeeklyProgress {
+  id        String   @id @default(uuid())
+  goalId    String
+  weekStart DateTime
+  weekEnd   DateTime
+  value     Float?
+  completed Boolean?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  goal Goal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  @@unique([goalId, weekStart])
+  @@map("weekly_progress")
+}
+
+enum GoalType {
+  MEASURABLE
+  YES_NO
+}
