@@ -12,6 +12,10 @@ jobs:
 
       - uses: superfly/flyctl-actions/setup-flyctl@master
 
+      - name: Create .env file
+        run: echo "VITE_API_URL=https://backend-green-tree-990.fly.dev/api" > .env
+        working-directory: ./frontend
+
       - name: Deploy to Fly.io
         run: flyctl deploy --remote-only
         working-directory: ./frontend
