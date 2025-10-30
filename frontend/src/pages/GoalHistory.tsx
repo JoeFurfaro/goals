@@ -7,7 +7,7 @@ import { ArrowLeft, TrendingUp, Calendar, Loader2 } from 'lucide-react'
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts'
 import { progressApi } from '@/api/goals'
 import { WeeklyData } from '@/utils/mockHistoricalData'
-import { format } from 'date-fns'
+import { formatUTC, isCurrentWeek } from '@/utils/dateFormat'
 
 const TIME_RANGES = [
   { label: 'Last 10 weeks', weeks: 10 },
@@ -33,27 +33,18 @@ export function GoalHistory() {
       try {
         const progressData = await progressApi.getHistoricalProgress(goalId, selectedRange)
 
-        // Get current week boundaries to mark current week
-        const now = new Date()
-        const currentWeekStart = new Date(now)
-        const day = currentWeekStart.getDay()
-        const diff = day === 0 ? -6 : 1 - day
-        currentWeekStart.setDate(now.getDate() + diff)
-        currentWeekStart.setHours(0, 0, 0, 0)
-
         // Transform backend data to chart format
         const chartData: WeeklyData[] = progressData.map((progress) => {
           const weekStart = new Date(progress.weekStart)
           const weekEnd = new Date(progress.weekEnd)
-          const isCurrent = weekStart.getTime() === currentWeekStart.getTime()
 
           return {
             weekStart,
             weekEnd,
-            weekLabel: format(weekStart, 'MMM d'),
+            weekLabel: formatUTC(weekStart, 'MMM d'),
             value: progress.value ?? undefined,
             completed: progress.completed ?? undefined,
-            isCurrent,
+            isCurrent: isCurrentWeek(weekStart),
           }
         })
 
@@ -240,7 +231,7 @@ export function GoalHistory() {
                           <div className="bg-white p-3 border rounded-lg shadow-lg">
                             <p className="font-semibold">{data.weekLabel}</p>
                             <p className="text-sm text-muted-foreground">
-                              {format(data.weekStart, 'MMM d')} - {format(data.weekEnd, 'MMM d, yyyy')}
+                              {formatUTC(data.weekStart, 'MMM d')} - {formatUTC(data.weekEnd, 'MMM d, yyyy')}
                             </p>
                             <p className="text-lg font-bold text-primary mt-1">
                               {data.value} {goal.unit}
@@ -292,7 +283,7 @@ export function GoalHistory() {
                           ? 'bg-yellow-50 border-2 border-yellow-400 border-dashed'
                           : 'bg-red-50 border-2 border-red-300'
                       }`}
-                      title={`${format(week.weekStart, 'MMM d')} - ${format(week.weekEnd, 'MMM d')}`}
+                      title={`${formatUTC(week.weekStart, 'MMM d')} - ${formatUTC(week.weekEnd, 'MMM d')}`}
                     >
                       {week.completed ? '✅' : week.isCurrent ? '⏳' : '❌'}
                     </div>
