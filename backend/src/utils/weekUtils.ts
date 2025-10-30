@@ -1,6 +1,7 @@
 /**
  * Get the start and end of the week for a given date.
  * Week starts on Monday at 00:00 and ends on Sunday at 23:59:59.999
+ * @param date The date to calculate week boundaries for (defaults to server's current date)
  */
 export function getWeekBoundaries(date: Date = new Date()): { weekStart: Date; weekEnd: Date } {
   const d = new Date(date)
@@ -20,14 +21,15 @@ export function getWeekBoundaries(date: Date = new Date()): { weekStart: Date; w
 
 /**
  * Get an array of week boundaries for the last N weeks including current week
+ * @param numWeeks Number of weeks to retrieve
+ * @param referenceDate The date to use as "now" (defaults to server's current date)
  */
-export function getLastNWeeks(numWeeks: number): Array<{ weekStart: Date; weekEnd: Date }> {
+export function getLastNWeeks(numWeeks: number, referenceDate: Date = new Date()): Array<{ weekStart: Date; weekEnd: Date }> {
   const weeks = []
-  const now = new Date()
 
   for (let i = numWeeks - 1; i >= 0; i--) {
-    const date = new Date(now)
-    date.setDate(now.getDate() - i * 7)
+    const date = new Date(referenceDate)
+    date.setDate(referenceDate.getDate() - i * 7)
     weeks.push(getWeekBoundaries(date))
   }
 

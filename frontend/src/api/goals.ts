@@ -145,6 +145,15 @@ const mapProgressFromBackend = (backendProgress: BackendProgress): WeeklyProgres
   }
 }
 
+// Helper to get local date in YYYY-MM-DD format
+const getLocalDateString = () => {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 export const progressApi = {
   async updateProgress(goalId: string, data: { value?: number; completed?: boolean }): Promise<WeeklyProgress> {
     const response = await fetch(`${API_URL}/goals/${goalId}/progress`, {
@@ -152,7 +161,10 @@ export const progressApi = {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify({
+        ...data,
+        localDate: getLocalDateString(),
+      }),
     })
 
     if (!response.ok) {
@@ -164,7 +176,8 @@ export const progressApi = {
   },
 
   async getCurrentProgress(goalId: string): Promise<WeeklyProgress | null> {
-    const response = await fetch(`${API_URL}/goals/${goalId}/progress/current`)
+    const localDate = getLocalDateString()
+    const response = await fetch(`${API_URL}/goals/${goalId}/progress/current?localDate=${encodeURIComponent(localDate)}`)
 
     if (!response.ok) {
       throw new Error('Failed to fetch current progress')
@@ -175,7 +188,8 @@ export const progressApi = {
   },
 
   async getHistoricalProgress(goalId: string, weeks: number = 10): Promise<WeeklyProgress[]> {
-    const response = await fetch(`${API_URL}/goals/${goalId}/progress/history?weeks=${weeks}`)
+    const localDate = getLocalDateString()
+    const response = await fetch(`${API_URL}/goals/${goalId}/progress/history?weeks=${weeks}&localDate=${encodeURIComponent(localDate)}`)
 
     if (!response.ok) {
       throw new Error('Failed to fetch historical progress')
